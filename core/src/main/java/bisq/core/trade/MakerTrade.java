@@ -24,6 +24,6 @@ import bisq.network.p2p.NodeAddress;
 import bisq.common.handlers.ErrorMessageHandler;
 
 public interface MakerTrade {
-    void handleTakeOfferRequest(PrepareMultisigRequest message, NodeAddress taker, ErrorMessageHandler errorMessageHandler);
+    void handlePrepareMultisigRequest(PrepareMultisigRequest message, NodeAddress taker, ErrorMessageHandler errorMessageHandler);
     void handleTakeOfferRequest(InputsForDepositTxRequest message, NodeAddress peerNodeAddress, ErrorMessageHandler errorMessageHandler);
 }

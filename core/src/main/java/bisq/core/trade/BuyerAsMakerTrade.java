@@ -108,10 +108,10 @@ public final class BuyerAsMakerTrade extends BuyerTrade implements MakerTrade {
     }
     
     @Override
-    public void handleTakeOfferRequest(PrepareMultisigRequest message,
+    public void handlePrepareMultisigRequest(PrepareMultisigRequest message,
                                        NodeAddress taker,
                                        ErrorMessageHandler errorMessageHandler) {
-        ((MakerProtocol) tradeProtocol).handleTakeOfferRequest(message, taker, errorMessageHandler);
+        ((MakerProtocol) tradeProtocol).handlePrepareMultisigRequest(message, taker, errorMessageHandler);
     }
 
     @Override

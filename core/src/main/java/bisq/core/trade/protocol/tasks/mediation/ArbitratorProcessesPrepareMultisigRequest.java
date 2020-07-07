@@ -28,9 +28,9 @@ import bisq.core.util.Validator;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class ProcessMediatedPrepareMultisigRequest extends TradeTask {
+public class ArbitratorProcessesPrepareMultisigRequest extends TradeTask {
     @SuppressWarnings({"unused"})
-    public ProcessMediatedPrepareMultisigRequest(TaskRunner taskHandler, Trade trade) {
+    public ArbitratorProcessesPrepareMultisigRequest(TaskRunner taskHandler, Trade trade) {
         super(taskHandler, trade);
     }
 
@@ -38,13 +38,13 @@ public class ProcessMediatedPrepareMultisigRequest extends TradeTask {
     protected void run() {
         try {
             runInterceptHook();
-            System.out.println("ProcessMediatedPrepareMultisigRequest.run()");
+            System.out.println("ArbitratorProcessesPrepareMultisigRequest.run()");
             log.debug("current trade state " + trade.getState());
             PrepareMultisigRequest message = (PrepareMultisigRequest) processModel.getTradeMessage();
             Validator.checkTradeId(processModel.getOfferId(), message);
             checkNotNull(message);
             
-            if (true) throw new RuntimeException("MEDIATOR READY TO PROCESS PREPARE MULTISIG REQUEST");
+            if (true) throw new RuntimeException("ARBITRATOR READY TO PROCESS PREPARE MULTISIG REQUEST");
             //processModel.getTradingPeer().setMediatedPayoutTxSignature(checkNotNull(message.getTxSignature()));
 
             // update to the latest peer address of our peer if the message is correct

@@ -420,6 +420,12 @@ public abstract class Trade implements Tradable, Model {
     @Getter
     private long refreshInterval;
     private static final long MAX_REFRESH_INTERVAL = 4 * ChronoUnit.HOURS.getDuration().toMillis();
+    
+    // Added in XMR integration
+    @Getter
+    private NodeAddress makerNodeAddress;
+    @Getter
+    private NodeAddress takerNodeAddress;
 
     ///////////////////////////////////////////////////////////////////////////////////////////
     // Constructor, initialization
@@ -483,7 +489,39 @@ public abstract class Trade implements Tradable, Model {
 
         setTradeAmount(tradeAmount);
     }
+    
+    // arbitrator
+    @SuppressWarnings("NullableProblems")
+    protected Trade(Offer offer,
+                    Coin tradeAmount,
+                    Coin txFee,
+                    Coin takerFee,
+                    long tradePrice,
+                    NodeAddress makerNodeAddress,
+                    NodeAddress takerNodeAddress,
+                    Storage<? extends TradableList> storage,
+                    XmrWalletService xmrWalletService) {
 
+        this.offer = offer;
+        this.txFee = txFee;
+        this.takerFee = takerFee;
+        this.tradePrice = tradePrice;
+        this.makerNodeAddress = makerNodeAddress;
+        this.takerNodeAddress = takerNodeAddress;
+        this.storage = storage;
+        this.xmrWalletService = xmrWalletService;
+        this.isCurrencyForTakerFeeBtc = false;  // TODO (woodser): remove completely for xmr integration
+
+        setTradeAmount(tradeAmount);
+        
+        // TODO (woodser): this is duplicated from common constructor; further reduce common constructor params?
+        txFeeAsLong = txFee.value;
+        takerFeeAsLong = takerFee.value;
+        takeOfferDate = new Date().getTime();
+        processModel = new ProcessModel();
+        lastRefreshRequestDate = takeOfferDate;
+        refreshInterval = Math.min(offer.getPaymentMethod().getMaxTradePeriod() / 5, MAX_REFRESH_INTERVAL);
+    }
 
     ///////////////////////////////////////////////////////////////////////////////////////////
     // PROTO BUFFER

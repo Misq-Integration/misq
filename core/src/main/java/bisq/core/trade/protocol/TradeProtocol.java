@@ -38,7 +38,6 @@ import bisq.core.trade.messages.InputsForDepositTxRequest;
 import bisq.core.trade.messages.MediatedPayoutTxPublishedMessage;
 import bisq.core.trade.messages.MediatedPayoutTxSignatureMessage;
 import bisq.core.trade.messages.PeerPublishedDelayedPayoutTxMessage;
-import bisq.core.trade.messages.PrepareMultisigRequest;
 import bisq.core.trade.messages.TradeMessage;
 import bisq.core.trade.protocol.tasks.ApplyFilter;
 import bisq.core.trade.protocol.tasks.ProcessPeerPublishedDelayedPayoutTxMessage;
@@ -46,7 +45,6 @@ import bisq.core.trade.protocol.tasks.mediation.BroadcastMediatedPayoutTx;
 import bisq.core.trade.protocol.tasks.mediation.FinalizeMediatedPayoutTx;
 import bisq.core.trade.protocol.tasks.mediation.ProcessMediatedPayoutSignatureMessage;
 import bisq.core.trade.protocol.tasks.mediation.ProcessMediatedPayoutTxPublishedMessage;
-import bisq.core.trade.protocol.tasks.mediation.ProcessMediatedPrepareMultisigRequest;
 import bisq.core.trade.protocol.tasks.mediation.SendMediatedPayoutSignatureMessage;
 import bisq.core.trade.protocol.tasks.mediation.SendMediatedPayoutTxPublishedMessage;
 import bisq.core.trade.protocol.tasks.mediation.SetupMediatedPayoutTxListener;
@@ -180,22 +178,6 @@ public abstract class TradeProtocol {
     // Mediation: incoming message
     ///////////////////////////////////////////////////////////////////////////////////////////
     
-    protected void handle(PrepareMultisigRequest tradeMessage, NodeAddress sender) {
-        processModel.setTradeMessage(tradeMessage);
-        processModel.setTempTradingPeerNodeAddress(sender);
-        
-        System.out.println("MEDAITOR RECEIVED PREPARE MULTISIG REQUEST");
-  
-        TradeTaskRunner taskRunner = new TradeTaskRunner(trade,
-                () -> handleTaskRunnerSuccess(tradeMessage, "handle PrepareMultisigRequest"),
-                errorMessage -> handleTaskRunnerFault(tradeMessage, errorMessage));
-  
-        taskRunner.addTasks(
-                ProcessMediatedPrepareMultisigRequest.class
-        );
-        taskRunner.run();
-    }
-
     protected void handle(MediatedPayoutTxSignatureMessage tradeMessage, NodeAddress sender) {
         processModel.setTradeMessage(tradeMessage);
         processModel.setTempTradingPeerNodeAddress(sender);
@@ -256,8 +238,6 @@ public abstract class TradeProtocol {
             handle((MediatedPayoutTxPublishedMessage) tradeMessage, sender);
         } else if (tradeMessage instanceof PeerPublishedDelayedPayoutTxMessage) {
             handle((PeerPublishedDelayedPayoutTxMessage) tradeMessage, sender);
-        } else if (tradeMessage instanceof PrepareMultisigRequest) {
-            handle((PrepareMultisigRequest) tradeMessage, sender);
         }
     }
 
@@ -305,8 +285,6 @@ public abstract class TradeProtocol {
             handle((MediatedPayoutTxPublishedMessage) tradeMessage, peerNodeAddress);
         } else if (tradeMessage instanceof PeerPublishedDelayedPayoutTxMessage) {
             handle((PeerPublishedDelayedPayoutTxMessage) tradeMessage, peerNodeAddress);
-        } else if (tradeMessage instanceof PrepareMultisigRequest) {
-            handle((PrepareMultisigRequest) tradeMessage, peerNodeAddress);
         }
     }
 

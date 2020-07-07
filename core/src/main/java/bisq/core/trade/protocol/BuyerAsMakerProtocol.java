@@ -111,7 +111,7 @@ public class BuyerAsMakerProtocol extends TradeProtocol implements BuyerProtocol
     ///////////////////////////////////////////////////////////////////////////////////////////
     
     @Override
-    public void handleTakeOfferRequest(PrepareMultisigRequest tradeMessage,
+    public void handlePrepareMultisigRequest(PrepareMultisigRequest tradeMessage,
                                        NodeAddress peerNodeAddress,
                                        ErrorMessageHandler errorMessageHandler) {
         Validator.checkTradeId(processModel.getOfferId(), tradeMessage);
@@ -119,7 +119,7 @@ public class BuyerAsMakerProtocol extends TradeProtocol implements BuyerProtocol
         processModel.setTempTradingPeerNodeAddress(peerNodeAddress);
 
         TradeTaskRunner taskRunner = new TradeTaskRunner(buyerAsMakerTrade,
-                () -> handleTaskRunnerSuccess(tradeMessage, "handleTakeOfferRequest"),
+                () -> handleTaskRunnerSuccess(tradeMessage, "handlePrepareMultisigRequest"),
                 errorMessage -> {
                     errorMessageHandler.handleErrorMessage(errorMessage);
                     handleTaskRunnerFault(errorMessage);

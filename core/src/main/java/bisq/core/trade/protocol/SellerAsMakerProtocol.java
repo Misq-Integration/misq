@@ -100,7 +100,7 @@ public class SellerAsMakerProtocol extends TradeProtocol implements SellerProtoc
     ///////////////////////////////////////////////////////////////////////////////////////////
     
     @Override
-    public void handleTakeOfferRequest(PrepareMultisigRequest tradeMessage,
+    public void handlePrepareMultisigRequest(PrepareMultisigRequest tradeMessage,
                                        NodeAddress sender,
                                        ErrorMessageHandler errorMessageHandler) {
       Validator.checkTradeId(processModel.getOfferId(), tradeMessage);

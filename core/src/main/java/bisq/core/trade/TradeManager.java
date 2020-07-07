@@ -356,7 +356,10 @@ public class TradeManager implements PersistedDataHost {
       log.info("Received PrepareMultisigRequest from {} with tradeId {} and uid {}",
               peer, prepareMultisigRequest.getTradeId(), prepareMultisigRequest.getUid());
       
-      // TODO (woodser): handle if arbiter differently
+      // TODO (woodser): handle if arbitrator differently
+      boolean isArbitrator = prepareMultisigRequest.getArbitratorNodeAddress().equals(p2PService.getNetworkNode().getNodeAddress());
+      System.out.println("Is arbitrator? " + isArbitrator);
+      if (isArbitrator) throw new RuntimeException("Invoke arbitrator protocol!");
 
       try {
           Validator.nonEmptyStringOf(prepareMultisigRequest.getTradeId());
@@ -394,7 +397,7 @@ public class TradeManager implements PersistedDataHost {
 
           initTrade(trade, trade.getProcessModel().isUseSavingsWallet(), trade.getProcessModel().getFundsNeededForTradeAsLong());
           tradableList.add(trade);
-          ((MakerTrade) trade).handleTakeOfferRequest(prepareMultisigRequest, peer, errorMessage -> {
+          ((MakerTrade) trade).handlePrepareMultisigRequest(prepareMultisigRequest, peer, errorMessage -> {
               if (takeOfferRequestErrorMessageHandler != null)
                   takeOfferRequestErrorMessageHandler.handleErrorMessage(errorMessage);
           });
@@ -402,7 +405,7 @@ public class TradeManager implements PersistedDataHost {
           // TODO respond
           //(RequestDepositTxInputsMessage)message.
           //  messageService.sendEncryptedMessage(peerAddress,messageWithPubKey.getMessage().);
-          log.debug("We received a take offer request but don't have that offer anymore.");
+          log.debug("We received a prepare multisig request but don't have that offer anymore.");
       }
   }
 
