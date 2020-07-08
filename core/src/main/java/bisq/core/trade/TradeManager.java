@@ -55,6 +55,7 @@ import bisq.core.dao.DaoFacade;
 import bisq.core.filter.FilterManager;
 import bisq.core.locale.Res;
 import bisq.core.offer.Offer;
+import bisq.core.offer.OfferBookService;
 import bisq.core.offer.OfferPayload;
 import bisq.core.offer.OpenOffer;
 import bisq.core.offer.OpenOfferManager;
@@ -98,6 +99,7 @@ public class TradeManager implements PersistedDataHost {
     private final XmrWalletService xmrWalletService;
     private final BsqWalletService bsqWalletService;
     private final TradeWalletService tradeWalletService;
+    private final OfferBookService offerBookService;
     private final OpenOfferManager openOfferManager;
     private final ClosedTradableManager closedTradableManager;
     private final FailedTradesManager failedTradesManager;
@@ -139,6 +141,7 @@ public class TradeManager implements PersistedDataHost {
                         XmrWalletService xmrWalletService,
                         BsqWalletService bsqWalletService,
                         TradeWalletService tradeWalletService,
+                        OfferBookService offerBookService,
                         OpenOfferManager openOfferManager,
                         ClosedTradableManager closedTradableManager,
                         FailedTradesManager failedTradesManager,
@@ -161,6 +164,7 @@ public class TradeManager implements PersistedDataHost {
         this.xmrWalletService = xmrWalletService;
         this.bsqWalletService = bsqWalletService;
         this.tradeWalletService = tradeWalletService;
+        this.offerBookService = offerBookService;
         this.openOfferManager = openOfferManager;
         this.closedTradableManager = closedTradableManager;
         this.failedTradesManager = failedTradesManager;
@@ -356,18 +360,48 @@ public class TradeManager implements PersistedDataHost {
       log.info("Received PrepareMultisigRequest from {} with tradeId {} and uid {}",
               peer, prepareMultisigRequest.getTradeId(), prepareMultisigRequest.getUid());
       
-      // TODO (woodser): handle if arbitrator differently
-      boolean isArbitrator = prepareMultisigRequest.getArbitratorNodeAddress().equals(p2PService.getNetworkNode().getNodeAddress());
-      System.out.println("Is arbitrator? " + isArbitrator);
-      if (isArbitrator) throw new RuntimeException("Invoke arbitrator protocol!");
-
       try {
           Validator.nonEmptyStringOf(prepareMultisigRequest.getTradeId());
       } catch (Throwable t) {
           log.warn("Invalid prepareMultisigRequestMessage " + prepareMultisigRequest.toString());
           return;
       }
+      
+      // handle request as arbitrator
+      boolean isArbitrator = prepareMultisigRequest.getArbitratorNodeAddress().equals(p2PService.getNetworkNode().getNodeAddress());
+      if (isArbitrator) {
+        
+        // get offer associated with trade
+        Offer offer = null;
+        for (Offer anOffer : offerBookService.getOffers()) {
+          if (anOffer.getId().equals(prepareMultisigRequest.getTradeId())) {
+            offer = anOffer;
+          }
+        }
+        if (offer == null) throw new RuntimeException("No offer on the books with trade id: " + prepareMultisigRequest.getTradeId()); // TODO (woodser): proper error handling
+        
+        Trade trade;
+        trade = new ArbitratorTrade(offer,
+                Coin.valueOf(prepareMultisigRequest.getTradeAmount()),
+                Coin.valueOf(prepareMultisigRequest.getTxFee()),
+                Coin.valueOf(prepareMultisigRequest.getTradeFee()),
+                prepareMultisigRequest.getTradePrice(),
+                prepareMultisigRequest.getSenderNodeAddress(),  // TODO (woodser): getMakerNodeAddress()
+                prepareMultisigRequest.getSenderNodeAddress(),  // TODO (woodser): getTakerNodeAddress()
+                tradableListStorage,
+                xmrWalletService);
+        
+        initTrade(trade, trade.getProcessModel().isUseSavingsWallet(), trade.getProcessModel().getFundsNeededForTradeAsLong());
+        tradableList.add(trade);
+        ((ArbitratorTrade) trade).handlePrepareMultisigRequest(prepareMultisigRequest, peer, errorMessage -> {
+            if (takeOfferRequestErrorMessageHandler != null)
+                takeOfferRequestErrorMessageHandler.handleErrorMessage(errorMessage);  // TODO (woodser): separate handler?
+        });
+        
+        return;
+      }
 
+      // handle request as maker
       Optional<OpenOffer> openOfferOptional = openOfferManager.getOpenOfferById(prepareMultisigRequest.getTradeId());
       if (openOfferOptional.isPresent() && openOfferOptional.get().getState() == OpenOffer.State.AVAILABLE) {
           OpenOffer openOffer = openOfferOptional.get();

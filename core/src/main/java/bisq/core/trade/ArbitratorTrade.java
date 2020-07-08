@@ -9,10 +9,12 @@ import bisq.core.offer.Offer;
 import bisq.core.trade.messages.PrepareMultisigRequest;
 import bisq.core.trade.protocol.ArbitratorProtocol;
 import bisq.network.p2p.NodeAddress;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Trade in the context of an arbitrator.
  */
+@Slf4j
 public class ArbitratorTrade extends Trade {
   
   public ArbitratorTrade(Offer offer,

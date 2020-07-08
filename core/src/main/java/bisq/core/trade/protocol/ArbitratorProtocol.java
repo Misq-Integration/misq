@@ -43,13 +43,11 @@ public class ArbitratorProtocol extends TradeProtocol {
   
   public void handlePrepareMultisigRequest(PrepareMultisigRequest tradeMessage,
                                      NodeAddress peerNodeAddress,
-                                     ErrorMessageHandler errorMessageHandler) {
+                                     ErrorMessageHandler errorMessageHandler) {    
       Validator.checkTradeId(processModel.getOfferId(), tradeMessage);
       processModel.setTradeMessage(tradeMessage);
       processModel.setTempTradingPeerNodeAddress(peerNodeAddress);
       
-      System.out.println("ARBITRATOR RECEIVED PREPARE MULTISIG REQUEST");
-
       TradeTaskRunner taskRunner = new TradeTaskRunner(arbitratorTrade,
               () -> handleTaskRunnerSuccess(tradeMessage, "handlePrepareMultisigRequest"),
               errorMessage -> {
@@ -57,8 +55,8 @@ public class ArbitratorProtocol extends TradeProtocol {
                   handleTaskRunnerFault(errorMessage);
               });
       taskRunner.addTasks(
-              ArbitratorProcessesPrepareMultisigRequest.class,
-              ApplyFilter.class
+              ArbitratorProcessesPrepareMultisigRequest.class
+              //ApplyFilter.class
 //              ArbitratorVerifyTraderAccounts.class,
 //              VerifyPeersAccountAgeWitness.class,
 //              MakerVerifyTakerFeePayment.class,

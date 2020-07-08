@@ -29,6 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class ArbitratorProcessesPrepareMultisigRequest extends TradeTask {
+  
     @SuppressWarnings({"unused"})
     public ArbitratorProcessesPrepareMultisigRequest(TaskRunner taskHandler, Trade trade) {
         super(taskHandler, trade);
