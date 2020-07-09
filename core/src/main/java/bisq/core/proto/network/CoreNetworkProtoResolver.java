@@ -1,4 +1,5 @@
 /*
+
  * This file is part of Bisq.
  *
  * Bisq is free software: you can redistribute it and/or modify it
@@ -68,6 +69,7 @@ import bisq.core.trade.messages.MediatedPayoutTxSignatureMessage;
 import bisq.core.trade.messages.PayoutTxPublishedMessage;
 import bisq.core.trade.messages.PeerPublishedDelayedPayoutTxMessage;
 import bisq.core.trade.messages.PrepareMultisigRequest;
+import bisq.core.trade.messages.PrepareMultisigResponse;
 import bisq.core.trade.messages.RefreshTradeStateRequest;
 import bisq.core.trade.statistics.TradeStatistics;
 import bisq.network.p2p.AckMessage;
@@ -145,6 +147,8 @@ public class CoreNetworkProtoResolver extends CoreProtoResolver implements Netwo
                     return RefreshTradeStateRequest.fromProto(proto.getRefreshTradeStateRequest(), messageVersion);
                 case PREPARE_MULTISIG_REQUEST:
                   return PrepareMultisigRequest.fromProto(proto.getPrepareMultisigRequest(), this, messageVersion);
+                case PREPARE_MULTISIG_RESPONSE:
+                  return PrepareMultisigResponse.fromProto(proto.getPrepareMultisigResponse(), this, messageVersion);
                 case INPUTS_FOR_DEPOSIT_TX_REQUEST:
                     return InputsForDepositTxRequest.fromProto(proto.getInputsForDepositTxRequest(), this, messageVersion);
                 case INPUTS_FOR_DEPOSIT_TX_RESPONSE:

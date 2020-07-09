@@ -56,8 +56,7 @@ public class MakerProcessesPrepareMultisigRequest extends TradeTask {
 
             final TradingPeer tradingPeer = processModel.getTradingPeer();
             tradingPeer.setPaymentAccountPayload(checkNotNull(prepareMultisigRequest.getPaymentAccountPayload()));
-
-            tradingPeer.setPreparedMultisigHex(checkNotNull(prepareMultisigRequest.getPreparedMultisigHex()));
+            
             tradingPeer.setPayoutAddressString(nonEmptyStringOf(prepareMultisigRequest.getPayoutAddressString()));
             tradingPeer.setPubKeyRing(checkNotNull(prepareMultisigRequest.getPubKeyRing()));
 
@@ -92,8 +91,15 @@ public class MakerProcessesPrepareMultisigRequest extends TradeTask {
 
             checkArgument(prepareMultisigRequest.getTradeAmount() > 0);
             trade.setTradeAmount(Coin.valueOf(prepareMultisigRequest.getTradeAmount()));
-
+            
+            // TODO (woodser): TradingPeer can be taker, maker, or arbitrator?  can have preparedMultisigHex?  trade.getArbitrator(), trade.getTradingPeer() ?
+            if (!prepareMultisigRequest.getMakerNodeAddress().equals(processModel.getMyNodeAddress())) throw new RuntimeException("Request's maker node address != my node address.  This should never happen.");
             trade.setTradingPeerNodeAddress(processModel.getTempTradingPeerNodeAddress());
+            trade.setTakerPreparedMultisigHex(checkNotNull(prepareMultisigRequest.getPreparedMultisigHex()));
+            trade.setTakerNodeAddress(prepareMultisigRequest.getTakerNodeAddress());
+            trade.setMakerNodeAddress(prepareMultisigRequest.getMakerNodeAddress());
+            trade.setArbitratorNodeAddress(prepareMultisigRequest.getArbitratorNodeAddress());
+            trade.setArbitratorPubKeyRing(mediator.getPubKeyRing());
 
             trade.persist();
 

@@ -17,26 +17,24 @@
 
 package bisq.core.trade.protocol;
 
-import bisq.core.btc.model.RawTransactionInput;
-import bisq.core.payment.payload.PaymentAccountPayload;
-import bisq.core.proto.CoreProtoResolver;
-
-import bisq.common.crypto.PubKeyRing;
-import bisq.common.proto.ProtoUtil;
-import bisq.common.proto.persistable.PersistablePayload;
-
-import com.google.protobuf.ByteString;
-import com.google.protobuf.Message;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
+
+import com.google.protobuf.ByteString;
+import com.google.protobuf.Message;
+
+import bisq.common.crypto.PubKeyRing;
+import bisq.common.proto.ProtoUtil;
+import bisq.common.proto.persistable.PersistablePayload;
+import bisq.core.btc.model.RawTransactionInput;
+import bisq.core.payment.payload.PaymentAccountPayload;
+import bisq.core.proto.CoreProtoResolver;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-
-import javax.annotation.Nullable;
 
 // Fields marked as transient are only used during protocol execution which are based on directMessages so we do not
 // persist them.
@@ -59,8 +57,6 @@ public final class TradingPeer implements PersistablePayload {
     private String accountId;
     @Nullable
     private PaymentAccountPayload paymentAccountPayload;
-    @Nullable
-    private String preparedMultisigHex;
     @Nullable
     private String payoutAddressString;
     @Nullable
@@ -100,7 +96,6 @@ public final class TradingPeer implements PersistablePayload {
                 .setChangeOutputValue(changeOutputValue);
         Optional.ofNullable(accountId).ifPresent(builder::setAccountId);
         Optional.ofNullable(paymentAccountPayload).ifPresent(e -> builder.setPaymentAccountPayload((protobuf.PaymentAccountPayload) e.toProtoMessage()));
-        Optional.ofNullable(preparedMultisigHex).ifPresent(builder::setPreparedMultisigHex);
         Optional.ofNullable(payoutAddressString).ifPresent(builder::setPayoutAddressString);
         Optional.ofNullable(contractAsJson).ifPresent(builder::setContractAsJson);
         Optional.ofNullable(contractSignature).ifPresent(builder::setContractSignature);
@@ -125,7 +120,6 @@ public final class TradingPeer implements PersistablePayload {
             tradingPeer.setChangeOutputValue(proto.getChangeOutputValue());
             tradingPeer.setAccountId(ProtoUtil.stringOrNullFromProto(proto.getAccountId()));
             tradingPeer.setPaymentAccountPayload(proto.hasPaymentAccountPayload() ? coreProtoResolver.fromProto(proto.getPaymentAccountPayload()) : null);
-            tradingPeer.setPreparedMultisigHex(ProtoUtil.stringOrNullFromProto(proto.getPreparedMultisigHex()));
             tradingPeer.setPayoutAddressString(ProtoUtil.stringOrNullFromProto(proto.getPayoutAddressString()));
             tradingPeer.setContractAsJson(ProtoUtil.stringOrNullFromProto(proto.getContractAsJson()));
             tradingPeer.setContractSignature(ProtoUtil.stringOrNullFromProto(proto.getContractSignature()));

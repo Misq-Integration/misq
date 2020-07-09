@@ -34,10 +34,11 @@ import bisq.core.trade.MakerTrade;
 import bisq.core.trade.Trade;
 import bisq.core.trade.TradeManager;
 import bisq.core.trade.messages.CounterCurrencyTransferStartedMessage;
-import bisq.core.trade.messages.InputsForDepositTxRequest;
 import bisq.core.trade.messages.MediatedPayoutTxPublishedMessage;
 import bisq.core.trade.messages.MediatedPayoutTxSignatureMessage;
 import bisq.core.trade.messages.PeerPublishedDelayedPayoutTxMessage;
+import bisq.core.trade.messages.PrepareMultisigRequest;
+import bisq.core.trade.messages.PrepareMultisigResponse;
 import bisq.core.trade.messages.TradeMessage;
 import bisq.core.trade.protocol.tasks.ApplyFilter;
 import bisq.core.trade.protocol.tasks.ProcessPeerPublishedDelayedPayoutTxMessage;
@@ -72,12 +73,14 @@ public abstract class TradeProtocol {
     public TradeProtocol(Trade trade) {
         this.trade = trade;
         this.processModel = trade.getProcessModel();
-
+        
         decryptedDirectMessageListener = (decryptedMessageWithPubKey, peersNodeAddress) -> {
             // We check the sig only as soon we have stored the peers pubKeyRing.
             PubKeyRing tradingPeerPubKeyRing = processModel.getTradingPeer().getPubKeyRing();
+            PubKeyRing arbitratorPubKeyRing = trade.getArbitratorPubKeyRing();
             PublicKey signaturePubKey = decryptedMessageWithPubKey.getSignaturePubKey();
-            if (tradingPeerPubKeyRing != null && signaturePubKey.equals(tradingPeerPubKeyRing.getSignaturePubKey())) {
+            if ((tradingPeerPubKeyRing != null && signaturePubKey.equals(tradingPeerPubKeyRing.getSignaturePubKey())) ||
+                (arbitratorPubKeyRing != null && signaturePubKey.equals(arbitratorPubKeyRing.getSignaturePubKey()))) {
                 NetworkEnvelope networkEnvelope = decryptedMessageWithPubKey.getNetworkEnvelope();
                 if (networkEnvelope instanceof TradeMessage) {
                     TradeMessage tradeMessage = (TradeMessage) networkEnvelope;
@@ -103,8 +106,6 @@ public abstract class TradeProtocol {
                         }
                     }
                 }
-            } else {
-              System.out.println("MESSAGE FAILED CONDITION: tradingPeerPubKeyRing != null && signaturePubKey.equals(tradingPeerPubKeyRing.getSignaturePubKey()");
             }
         };
         processModel.getP2PService().addDecryptedDirectMessageListener(decryptedDirectMessageListener);
@@ -178,6 +179,10 @@ public abstract class TradeProtocol {
     // Mediation: incoming message
     ///////////////////////////////////////////////////////////////////////////////////////////
     
+    protected void handle(PrepareMultisigResponse tradeMessage, NodeAddress sender) {
+      throw new RuntimeException("TradeProtocol.handle(preparedMultisigResponse) not yet implemented");
+  }
+    
     protected void handle(MediatedPayoutTxSignatureMessage tradeMessage, NodeAddress sender) {
         processModel.setTradeMessage(tradeMessage);
         processModel.setTempTradingPeerNodeAddress(sender);
@@ -238,7 +243,9 @@ public abstract class TradeProtocol {
             handle((MediatedPayoutTxPublishedMessage) tradeMessage, sender);
         } else if (tradeMessage instanceof PeerPublishedDelayedPayoutTxMessage) {
             handle((PeerPublishedDelayedPayoutTxMessage) tradeMessage, sender);
-        }
+        } else if (tradeMessage instanceof PrepareMultisigResponse) {
+          handle((PrepareMultisigResponse) tradeMessage, sender);
+      }
     }
 
 
@@ -339,15 +346,7 @@ public abstract class TradeProtocol {
         System.out.println("SENDING ACK MESSAGE!!!");
 
         String tradeId = tradeMessage.getTradeId();
-        String sourceUid = "";
-        if (tradeMessage instanceof MailboxMessage) {
-            sourceUid = ((MailboxMessage) tradeMessage).getUid();
-        } else {
-            // For direct msg we don't have a mandatory uid so we need to cast to get it
-            if (tradeMessage instanceof InputsForDepositTxRequest) {
-                sourceUid = tradeMessage.getUid();
-            }
-        }
+        String sourceUid = tradeMessage.getUid();
         AckMessage ackMessage = new AckMessage(processModel.getMyNodeAddress(),
                 AckMessageSourceType.TRADE_MESSAGE,
                 tradeMessage.getClass().getSimpleName(),
@@ -355,33 +354,44 @@ public abstract class TradeProtocol {
                 tradeId,
                 result,
                 errorMessage);
+        
+        // get sender's pub key ring  // TODO (woodser): not in processModel.getTradingPeer().getPubKeyRing() when arbitrator
+        final NodeAddress nodeAddress;
+        PubKeyRing pubKeyRing = null;
+        if (tradeMessage instanceof PrepareMultisigRequest) {
+          nodeAddress = ((PrepareMultisigRequest) tradeMessage).getSenderNodeAddress();
+          pubKeyRing = ((PrepareMultisigRequest) tradeMessage).getPubKeyRing();
+        } else {
+          throw new RuntimeException("GET PUB KEY RING FROM MESSAGE TYPE " + tradeMessage.getClass().getTypeName());
+        }
+        
         // If there was an error during offer verification, the tradingPeerNodeAddress of the trade might not be set yet.
         // We can find the peer's node address in the processModel's tempTradingPeerNodeAddress in that case.
-        final NodeAddress peersNodeAddress = trade.getTradingPeerNodeAddress() != null ? trade.getTradingPeerNodeAddress() : processModel.getTempTradingPeerNodeAddress();
-        log.info("Send AckMessage for {} to peer {}. tradeId={}, sourceUid={}",
-                ackMessage.getSourceMsgClassName(), peersNodeAddress, tradeId, sourceUid);
+//        final NodeAddress peersNodeAddress = trade.getTradingPeerNodeAddress() != null ? trade.getTradingPeerNodeAddress() : processModel.getTempTradingPeerNodeAddress();
+        log.info("Send AckMessage for {} to peer {} with pub key ring {}. tradeId={}, sourceUid={}",
+                ackMessage.getSourceMsgClassName(), nodeAddress, pubKeyRing, tradeId, sourceUid);
         String finalSourceUid = sourceUid;
         processModel.getP2PService().sendEncryptedMailboxMessage(
-                peersNodeAddress,
-                processModel.getTradingPeer().getPubKeyRing(),
+                nodeAddress,
+                pubKeyRing,
                 ackMessage,
                 new SendMailboxMessageListener() {
                     @Override
                     public void onArrived() {
                         log.info("AckMessage for {} arrived at peer {}. tradeId={}, sourceUid={}",
-                                ackMessage.getSourceMsgClassName(), peersNodeAddress, tradeId, finalSourceUid);
+                                ackMessage.getSourceMsgClassName(), nodeAddress, tradeId, finalSourceUid);
                     }
 
                     @Override
                     public void onStoredInMailbox() {
                         log.info("AckMessage for {} stored in mailbox for peer {}. tradeId={}, sourceUid={}",
-                                ackMessage.getSourceMsgClassName(), peersNodeAddress, tradeId, finalSourceUid);
+                                ackMessage.getSourceMsgClassName(), nodeAddress, tradeId, finalSourceUid);
                     }
 
                     @Override
                     public void onFault(String errorMessage) {
                         log.error("AckMessage for {} failed. Peer {}. tradeId={}, sourceUid={}, errorMessage={}",
-                                ackMessage.getSourceMsgClassName(), peersNodeAddress, tradeId, finalSourceUid, errorMessage);
+                                ackMessage.getSourceMsgClassName(), nodeAddress, tradeId, finalSourceUid, errorMessage);
                     }
                 }
         );

@@ -394,6 +394,7 @@ public class TradeManager implements PersistedDataHost {
                 prepareMultisigRequest.getTradePrice(),
                 prepareMultisigRequest.getMakerNodeAddress(),
                 prepareMultisigRequest.getTakerNodeAddress(),
+                prepareMultisigRequest.getArbitratorNodeAddress(),
                 tradableListStorage,
                 xmrWalletService);
         
@@ -463,6 +464,8 @@ public class TradeManager implements PersistedDataHost {
 //            log.warn("Invalid requestDepositTxInputsMessage " + inputsForDepositTxRequest.toString());
 //            return;
 //        }
+//        
+//        inputsForDepositTxRequest.get
 //
 //        Optional<OpenOffer> openOfferOptional = openOfferManager.getOpenOfferById(inputsForDepositTxRequest.getTradeId());
 //        if (openOfferOptional.isPresent() && openOfferOptional.get().getState() == OpenOffer.State.AVAILABLE) {

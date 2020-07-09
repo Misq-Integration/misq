@@ -423,9 +423,20 @@ public abstract class Trade implements Tradable, Model {
     
     // Added in XMR integration
     @Getter
+    @Setter
     private NodeAddress makerNodeAddress;
     @Getter
+    @Setter
     private NodeAddress takerNodeAddress;
+    @Getter
+    @Setter
+    private String takerPreparedMultisigHex;
+    @Getter
+    @Setter
+    private String makerPreparedMultisigHex;
+    @Getter
+    @Setter
+    private String arbitratorPreparedMultisigHex;
 
     ///////////////////////////////////////////////////////////////////////////////////////////
     // Constructor, initialization
@@ -507,6 +518,7 @@ public abstract class Trade implements Tradable, Model {
                     long tradePrice,
                     NodeAddress makerNodeAddress,
                     NodeAddress takerNodeAddress,
+                    NodeAddress arbitratorNodeAddress,
                     Storage<? extends TradableList> storage,
                     XmrWalletService xmrWalletService) {
 
@@ -577,6 +589,11 @@ public abstract class Trade implements Tradable, Model {
         Optional.ofNullable(mediationResultState).ifPresent(e -> builder.setMediationResultState(MediationResultState.toProtoMessage(mediationResultState)));
         Optional.ofNullable(refundResultState).ifPresent(e -> builder.setRefundResultState(RefundResultState.toProtoMessage(refundResultState)));
         Optional.ofNullable(delayedPayoutTxBytes).ifPresent(e -> builder.setDelayedPayoutTxBytes(ByteString.copyFrom(delayedPayoutTxBytes)));
+        Optional.ofNullable(takerNodeAddress).ifPresent(e -> builder.setTakerNodeAddress(takerNodeAddress.toProtoMessage()));
+        Optional.ofNullable(makerNodeAddress).ifPresent(e -> builder.setMakerNodeAddress(makerNodeAddress.toProtoMessage()));
+        Optional.ofNullable(takerPreparedMultisigHex).ifPresent(e -> builder.setTakerPreparedMultisigHex(takerPreparedMultisigHex));
+        Optional.ofNullable(makerPreparedMultisigHex).ifPresent(e -> builder.setMakerPreparedMultisigHex(makerPreparedMultisigHex));
+        Optional.ofNullable(arbitratorPreparedMultisigHex).ifPresent(e -> builder.setArbitratorPreparedMultisigHex(arbitratorPreparedMultisigHex));
         return builder.build();
     }
 
@@ -609,6 +626,11 @@ public abstract class Trade implements Tradable, Model {
         trade.setDelayedPayoutTxBytes(ProtoUtil.byteArrayOrNullFromProto(proto.getDelayedPayoutTxBytes()));
         trade.setLockTime(proto.getLockTime());
         trade.setLastRefreshRequestDate(proto.getLastRefreshRequestDate());
+        trade.setTakerNodeAddress(NodeAddress.fromProto(proto.getTakerNodeAddress()));
+        trade.setMakerNodeAddress(NodeAddress.fromProto(proto.getMakerNodeAddress()));
+        trade.setTakerPreparedMultisigHex(proto.getTakerPreparedMultisigHex());
+        trade.setMakerPreparedMultisigHex(proto.getMakerPreparedMultisigHex());
+        trade.setArbitratorPreparedMultisigHex(proto.getArbitratorPreparedMultisigHex());
 
         trade.chatMessages.addAll(proto.getChatMessageList().stream()
                 .map(ChatMessage::fromPayloadProto)

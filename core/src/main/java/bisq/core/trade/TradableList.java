@@ -17,26 +17,23 @@
 
 package bisq.core.trade;
 
-import bisq.core.btc.wallet.XmrWalletService;
-import bisq.core.offer.OpenOffer;
-import bisq.core.proto.CoreProtoResolver;
-
-import bisq.common.proto.ProtoUtil;
-import bisq.common.proto.ProtobufferRuntimeException;
-import bisq.common.proto.persistable.UserThreadMappedPersistableEnvelope;
-import bisq.common.storage.Storage;
-
-import com.google.protobuf.Message;
-
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.google.protobuf.Message;
+
+import bisq.common.proto.ProtoUtil;
+import bisq.common.proto.ProtobufferRuntimeException;
+import bisq.common.proto.persistable.UserThreadMappedPersistableEnvelope;
+import bisq.common.storage.Storage;
+import bisq.core.btc.wallet.XmrWalletService;
+import bisq.core.offer.OpenOffer;
+import bisq.core.proto.CoreProtoResolver;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -95,6 +92,8 @@ public final class TradableList<T extends Tradable> implements UserThreadMappedP
                             return SellerAsMakerTrade.fromProto(tradable.getSellerAsMakerTrade(), storage, xmrWalletService, coreProtoResolver);
                         case SELLER_AS_TAKER_TRADE:
                             return SellerAsTakerTrade.fromProto(tradable.getSellerAsTakerTrade(), storage, xmrWalletService, coreProtoResolver);
+                        case ARBITRATOR_TRADE:
+                          return ArbitratorTrade.fromProto(tradable.getArbitratorTrade(), storage, xmrWalletService, coreProtoResolver);
                         default:
                             log.error("Unknown messageCase. tradable.getMessageCase() = " + tradable.getMessageCase());
                             throw new ProtobufferRuntimeException("Unknown messageCase. tradable.getMessageCase() = " + tradable.getMessageCase());

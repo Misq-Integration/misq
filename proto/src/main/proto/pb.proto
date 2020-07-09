@@ -277,13 +277,10 @@ message PrepareMultisigRequest {
 
 message PrepareMultisigResponse {
     string trade_id = 1;
-    PaymentAccountPayload payment_account_payload = 2;
-    string account_id = 3;
-    string prepared_multisig_hex = 4;
-    string payout_address_string = 5;
-    NodeAddress sender_node_address = 6;
-    string uid = 7;
-    int64 current_date = 8;
+    NodeAddress sender_node_address = 2;
+    string prepared_multisig_hex = 3;
+    string uid = 4;
+    int64 current_date = 5;
 }
 
 message DelayedPayoutTxSignatureRequest {
@@ -1329,6 +1326,7 @@ message Tradable {
         BuyerAsTakerTrade buyer_as_taker_trade = 3;
         SellerAsMakerTrade seller_as_maker_trade = 4;
         SellerAsTakerTrade seller_as_taker_trade = 5;
+        ArbitratorTrade arbitrator_trade = 6;
     }
 }
 
@@ -1439,6 +1437,9 @@ message Trade {
     
     NodeAddress taker_node_address = 1000;	// TODO (woodser): re-order?
     NodeAddress maker_node_address = 1001;
+    string taker_prepared_multisig_hex = 1002;
+    string maker_prepared_multisig_hex = 1003;
+    string arbitrator_prepared_multisig_hex = 1004;
 }
 
 message BuyerAsMakerTrade {
@@ -1455,6 +1456,10 @@ message SellerAsMakerTrade {
 
 message SellerAsTakerTrade {
     Trade trade = 1;
+}
+
+message ArbitratorTrade {
+	Trade trade = 1;
 }
 
 message ProcessModel {
@@ -1496,8 +1501,6 @@ message TradingPeer {
     bytes account_age_witness_signature = 13;
     int64 current_date = 14;
     bytes mediated_payout_tx_signature = 15;
-    
-    string prepared_multisig_hex = 1001;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////
