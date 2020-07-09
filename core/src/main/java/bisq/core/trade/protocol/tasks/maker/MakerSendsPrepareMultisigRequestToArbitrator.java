@@ -92,6 +92,9 @@ public class MakerSendsPrepareMultisigRequestToArbitrator extends TradeTask {
             final PaymentAccountPayload paymentAccountPayload = checkNotNull(processModel.getPaymentAccountPayload(trade), "processModel.getPaymentAccountPayload(trade) must not be null");
             byte[] sig = Sig.sign(processModel.getKeyRing().getSignatureKeyPair().getPrivate(), offerId.getBytes(Charsets.UTF_8));
             
+            System.out.println("MAKER SENDING ARBITRTATOR SENDER NODE ADDRESS");
+            System.out.println(processModel.getMyNodeAddress());
+            
             // create message to request preparing multisig
             PrepareMultisigRequest message = new PrepareMultisigRequest(
                     offerId,
@@ -111,16 +114,21 @@ public class MakerSendsPrepareMultisigRequestToArbitrator extends TradeTask {
                     UUID.randomUUID().toString(),
                     Version.getP2PMessageVersion(),
                     sig,
-                    new Date().getTime());
+                    new Date().getTime(),
+                    prepareMultisigRequest.getTakerNodeAddress(),
+                    prepareMultisigRequest.getMakerNodeAddress());
             
             log.info("Send {} with offerId {} and uid {} to peer {}",
                     message.getClass().getSimpleName(), message.getTradeId(),
                     message.getUid(), trade.getMediatorNodeAddress());
             
             
-            System.out.println("MAKER MEDIATOR STUFFS");
-            System.out.println(acceptedMediatorAddresses == null ? new ArrayList<>() : new ArrayList<>(acceptedMediatorAddresses));
-            System.out.println(trade.getMediatorNodeAddress());
+            System.out.println("MAKER TRADE INFO");
+            System.out.println("Trading peer node address: " + trade.getTradingPeerNodeAddress());
+            System.out.println("Maker node address: " + trade.getMakerNodeAddress());
+            System.out.println("Taker node adddress: " + trade.getTakerNodeAddress());
+            System.out.println("Mediator node address: " + trade.getMediatorNodeAddress());
+            System.out.println("Arbitrator node address: " + trade.getArbitratorNodeAddress());
             
             // send request to mediator
             processModel.getP2PService().sendEncryptedDirectMessage(

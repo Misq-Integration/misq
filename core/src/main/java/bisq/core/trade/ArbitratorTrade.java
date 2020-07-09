@@ -22,11 +22,11 @@ public class ArbitratorTrade extends Trade {
           Coin txFee,
           Coin takerFee,
           long tradePrice,
-          NodeAddress makerNodeAddress,
           NodeAddress takerNodeAddress,
+          NodeAddress makerNodeAddress,
           Storage<? extends TradableList> storage,
           XmrWalletService xmrWalletService) {
-    super(offer, tradeAmount, txFee, takerFee, tradePrice, makerNodeAddress, takerNodeAddress, storage, xmrWalletService);
+    super(offer, tradeAmount, txFee, takerFee, tradePrice, takerNodeAddress, makerNodeAddress, storage, xmrWalletService);
   }
 
   public void handlePrepareMultisigRequest(PrepareMultisigRequest message, NodeAddress taker, ErrorMessageHandler errorMessageHandler) {

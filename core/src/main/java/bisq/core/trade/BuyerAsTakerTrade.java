@@ -17,23 +17,20 @@
 
 package bisq.core.trade;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
+import javax.annotation.Nullable;
+
+import org.bitcoinj.core.Coin;
+
+import bisq.common.storage.Storage;
 import bisq.core.btc.wallet.XmrWalletService;
 import bisq.core.offer.Offer;
 import bisq.core.proto.CoreProtoResolver;
 import bisq.core.trade.protocol.BuyerAsTakerProtocol;
 import bisq.core.trade.protocol.TakerProtocol;
-
 import bisq.network.p2p.NodeAddress;
-
-import bisq.common.storage.Storage;
-
-import org.bitcoinj.core.Coin;
-
 import lombok.extern.slf4j.Slf4j;
-
-import javax.annotation.Nullable;
-
-import static com.google.common.base.Preconditions.checkArgument;
 
 @Slf4j
 public final class BuyerAsTakerTrade extends BuyerTrade implements TakerTrade {
@@ -49,6 +46,8 @@ public final class BuyerAsTakerTrade extends BuyerTrade implements TakerTrade {
                              boolean isCurrencyForTakerFeeBtc,
                              long tradePrice,
                              NodeAddress tradingPeerNodeAddress,
+                             @Nullable NodeAddress takerNodeAddress,
+                             @Nullable NodeAddress makerNodeAddress,
                              @Nullable NodeAddress arbitratorNodeAddress,
                              @Nullable NodeAddress mediatorNodeAddress,
                              @Nullable NodeAddress refundAgentNodeAddress,
@@ -61,6 +60,8 @@ public final class BuyerAsTakerTrade extends BuyerTrade implements TakerTrade {
                 isCurrencyForTakerFeeBtc,
                 tradePrice,
                 tradingPeerNodeAddress,
+                takerNodeAddress,
+                makerNodeAddress,
                 arbitratorNodeAddress,
                 mediatorNodeAddress,
                 refundAgentNodeAddress,
@@ -94,6 +95,8 @@ public final class BuyerAsTakerTrade extends BuyerTrade implements TakerTrade {
                         proto.getIsCurrencyForTakerFeeBtc(),
                         proto.getTradePrice(),
                         proto.hasTradingPeerNodeAddress() ? NodeAddress.fromProto(proto.getTradingPeerNodeAddress()) : null,
+                        proto.hasTakerNodeAddress() ? NodeAddress.fromProto(proto.getTakerNodeAddress()) : null,
+                        proto.hasMakerNodeAddress() ? NodeAddress.fromProto(proto.getMakerNodeAddress()) : null,
                         proto.hasArbitratorNodeAddress() ? NodeAddress.fromProto(proto.getArbitratorNodeAddress()) : null,
                         proto.hasMediatorNodeAddress() ? NodeAddress.fromProto(proto.getMediatorNodeAddress()) : null,
                         proto.hasRefundAgentNodeAddress() ? NodeAddress.fromProto(proto.getRefundAgentNodeAddress()) : null,

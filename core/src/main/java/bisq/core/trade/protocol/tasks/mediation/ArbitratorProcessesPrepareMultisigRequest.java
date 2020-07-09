@@ -45,14 +45,19 @@ public class ArbitratorProcessesPrepareMultisigRequest extends TradeTask {
             Validator.checkTradeId(processModel.getOfferId(), message);
             checkNotNull(message);
             
-            if (true) throw new RuntimeException("ARBITRATOR READY TO PROCESS PREPARE MULTISIG REQUEST");
-            //processModel.getTradingPeer().setMediatedPayoutTxSignature(checkNotNull(message.getTxSignature()));
-
             // update to the latest peer address of our peer if the message is correct
             trade.setTradingPeerNodeAddress(processModel.getTempTradingPeerNodeAddress());
             processModel.removeMailboxMessageAfterProcessing(trade);
-
-            trade.setMediationResultState(MediationResultState.RECEIVED_SIG_MSG);
+            
+            System.out.println("ARBITRATOR TRADE INFO");
+            System.out.println("Trading peer node address: " + trade.getTradingPeerNodeAddress());
+            System.out.println("Maker node address: " + trade.getMakerNodeAddress());
+            System.out.println("Taker node adddress: " + trade.getTakerNodeAddress());
+            System.out.println("Mediator node address: " + trade.getMediatorNodeAddress());
+            System.out.println("Arbitrator node address: " + trade.getArbitratorNodeAddress());
+            
+            if (true) throw new RuntimeException("ARBITRATOR READY TO PROCESS PREPARE MULTISIG REQUEST");
+            //processModel.getTradingPeer().setMediatedPayoutTxSignature(checkNotNull(message.getTxSignature()));
 
             complete();
         } catch (Throwable t) {

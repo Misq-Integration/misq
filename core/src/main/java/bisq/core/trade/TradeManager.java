@@ -189,7 +189,7 @@ public class TradeManager implements PersistedDataHost {
 
             // Handler for incoming initial network_messages from taker
             if (networkEnvelope instanceof InputsForDepositTxRequest) {
-                handlePayDepositRequest((InputsForDepositTxRequest) networkEnvelope, peerNodeAddress);
+                //handlePayDepositRequest((InputsForDepositTxRequest) networkEnvelope, peerNodeAddress);
             } else if (networkEnvelope instanceof PrepareMultisigRequest) {
                 handlePrepareMultisigRequest((PrepareMultisigRequest) networkEnvelope, peerNodeAddress);
             }
@@ -367,6 +367,12 @@ public class TradeManager implements PersistedDataHost {
           return;
       }
       
+      System.out.println("RECEIVED PREPARE MULTISIG REQUEST INFO");
+      System.out.println("Sender peer node address: " + prepareMultisigRequest.getSenderNodeAddress());
+      System.out.println("Maker node address: " + prepareMultisigRequest.getMakerNodeAddress());
+      System.out.println("Taker node adddress: " + prepareMultisigRequest.getTakerNodeAddress());
+      System.out.println("Arbitrator node address: " + prepareMultisigRequest.getArbitratorNodeAddress());
+      
       // handle request as arbitrator
       boolean isArbitrator = prepareMultisigRequest.getArbitratorNodeAddress().equals(p2PService.getNetworkNode().getNodeAddress());
       if (isArbitrator) {
@@ -386,8 +392,8 @@ public class TradeManager implements PersistedDataHost {
                 Coin.valueOf(prepareMultisigRequest.getTxFee()),
                 Coin.valueOf(prepareMultisigRequest.getTradeFee()),
                 prepareMultisigRequest.getTradePrice(),
-                prepareMultisigRequest.getSenderNodeAddress(),  // TODO (woodser): getMakerNodeAddress()
-                prepareMultisigRequest.getSenderNodeAddress(),  // TODO (woodser): getTakerNodeAddress()
+                prepareMultisigRequest.getMakerNodeAddress(),
+                prepareMultisigRequest.getTakerNodeAddress(),
                 tradableListStorage,
                 xmrWalletService);
         
@@ -413,9 +419,11 @@ public class TradeManager implements PersistedDataHost {
                       Coin.valueOf(prepareMultisigRequest.getTxFee()),
                       Coin.valueOf(prepareMultisigRequest.getTradeFee()),
                       true,
-                      openOffer.getArbitratorNodeAddress(),
-                      openOffer.getMediatorNodeAddress(),
-                      openOffer.getRefundAgentNodeAddress(),
+                      prepareMultisigRequest.getTakerNodeAddress(),
+                      prepareMultisigRequest.getMakerNodeAddress(),
+                      prepareMultisigRequest.getArbitratorNodeAddress(),
+                      prepareMultisigRequest.getArbitratorNodeAddress(),   // TODO (woodser): only using arbitrator address which originally came from offer's mediator node address
+                      prepareMultisigRequest.getArbitratorNodeAddress(),
                       tradableListStorage,
                       xmrWalletService);
           else
@@ -423,9 +431,11 @@ public class TradeManager implements PersistedDataHost {
                       Coin.valueOf(prepareMultisigRequest.getTxFee()),
                       Coin.valueOf(prepareMultisigRequest.getTradeFee()),
                       true,
+                      prepareMultisigRequest.getTakerNodeAddress(),
+                      prepareMultisigRequest.getMakerNodeAddress(),
+                      openOffer.getArbitratorNodeAddress(), // TODO (woodser): using mediator from offer as arbitrator
                       openOffer.getArbitratorNodeAddress(),
-                      openOffer.getMediatorNodeAddress(),
-                      openOffer.getRefundAgentNodeAddress(),
+                      openOffer.getArbitratorNodeAddress(),
                       tradableListStorage,
                       xmrWalletService);
 
@@ -443,57 +453,57 @@ public class TradeManager implements PersistedDataHost {
       }
   }
 
-    private void handlePayDepositRequest(InputsForDepositTxRequest inputsForDepositTxRequest, NodeAddress peer) {
-        log.info("Received PayDepositRequest from {} with tradeId {} and uid {}",
-                peer, inputsForDepositTxRequest.getTradeId(), inputsForDepositTxRequest.getUid());
-
-        try {
-            Validator.nonEmptyStringOf(inputsForDepositTxRequest.getTradeId());
-        } catch (Throwable t) {
-            log.warn("Invalid requestDepositTxInputsMessage " + inputsForDepositTxRequest.toString());
-            return;
-        }
-
-        Optional<OpenOffer> openOfferOptional = openOfferManager.getOpenOfferById(inputsForDepositTxRequest.getTradeId());
-        if (openOfferOptional.isPresent() && openOfferOptional.get().getState() == OpenOffer.State.AVAILABLE) {
-            OpenOffer openOffer = openOfferOptional.get();
-            Offer offer = openOffer.getOffer();
-            openOfferManager.reserveOpenOffer(openOffer);
-            Trade trade;
-            if (offer.isBuyOffer())
-                trade = new BuyerAsMakerTrade(offer,
-                        Coin.valueOf(inputsForDepositTxRequest.getTxFee()),
-                        Coin.valueOf(inputsForDepositTxRequest.getTakerFee()),
-                        inputsForDepositTxRequest.isCurrencyForTakerFeeBtc(),
-                        openOffer.getArbitratorNodeAddress(),
-                        openOffer.getMediatorNodeAddress(),
-                        openOffer.getRefundAgentNodeAddress(),
-                        tradableListStorage,
-                        xmrWalletService);
-            else
-                trade = new SellerAsMakerTrade(offer,
-                        Coin.valueOf(inputsForDepositTxRequest.getTxFee()),
-                        Coin.valueOf(inputsForDepositTxRequest.getTakerFee()),
-                        inputsForDepositTxRequest.isCurrencyForTakerFeeBtc(),
-                        openOffer.getArbitratorNodeAddress(),
-                        openOffer.getMediatorNodeAddress(),
-                        openOffer.getRefundAgentNodeAddress(),
-                        tradableListStorage,
-                        xmrWalletService);
-
-            initTrade(trade, trade.getProcessModel().isUseSavingsWallet(), trade.getProcessModel().getFundsNeededForTradeAsLong());
-            tradableList.add(trade);
-            ((MakerTrade) trade).handleTakeOfferRequest(inputsForDepositTxRequest, peer, errorMessage -> {
-                if (takeOfferRequestErrorMessageHandler != null)
-                    takeOfferRequestErrorMessageHandler.handleErrorMessage(errorMessage);
-            });
-        } else {
-            // TODO respond
-            //(RequestDepositTxInputsMessage)message.
-            //  messageService.sendEncryptedMessage(peerAddress,messageWithPubKey.getMessage().);
-            log.debug("We received a take offer request but don't have that offer anymore.");
-        }
-    }
+//    private void handlePayDepositRequest(InputsForDepositTxRequest inputsForDepositTxRequest, NodeAddress peer) {
+//        log.info("Received PayDepositRequest from {} with tradeId {} and uid {}",
+//                peer, inputsForDepositTxRequest.getTradeId(), inputsForDepositTxRequest.getUid());
+//
+//        try {
+//            Validator.nonEmptyStringOf(inputsForDepositTxRequest.getTradeId());
+//        } catch (Throwable t) {
+//            log.warn("Invalid requestDepositTxInputsMessage " + inputsForDepositTxRequest.toString());
+//            return;
+//        }
+//
+//        Optional<OpenOffer> openOfferOptional = openOfferManager.getOpenOfferById(inputsForDepositTxRequest.getTradeId());
+//        if (openOfferOptional.isPresent() && openOfferOptional.get().getState() == OpenOffer.State.AVAILABLE) {
+//            OpenOffer openOffer = openOfferOptional.get();
+//            Offer offer = openOffer.getOffer();
+//            openOfferManager.reserveOpenOffer(openOffer);
+//            Trade trade;
+//            if (offer.isBuyOffer())
+//                trade = new BuyerAsMakerTrade(offer,
+//                        Coin.valueOf(inputsForDepositTxRequest.getTxFee()),
+//                        Coin.valueOf(inputsForDepositTxRequest.getTakerFee()),
+//                        inputsForDepositTxRequest.isCurrencyForTakerFeeBtc(),
+//                        openOffer.getArbitratorNodeAddress(),
+//                        openOffer.getMediatorNodeAddress(),
+//                        openOffer.getRefundAgentNodeAddress(),
+//                        tradableListStorage,
+//                        xmrWalletService);
+//            else
+//                trade = new SellerAsMakerTrade(offer,
+//                        Coin.valueOf(inputsForDepositTxRequest.getTxFee()),
+//                        Coin.valueOf(inputsForDepositTxRequest.getTakerFee()),
+//                        inputsForDepositTxRequest.isCurrencyForTakerFeeBtc(),
+//                        openOffer.getArbitratorNodeAddress(),
+//                        openOffer.getMediatorNodeAddress(),
+//                        openOffer.getRefundAgentNodeAddress(),
+//                        tradableListStorage,
+//                        xmrWalletService);
+//
+//            initTrade(trade, trade.getProcessModel().isUseSavingsWallet(), trade.getProcessModel().getFundsNeededForTradeAsLong());
+//            tradableList.add(trade);
+//            ((MakerTrade) trade).handleTakeOfferRequest(inputsForDepositTxRequest, peer, errorMessage -> {
+//                if (takeOfferRequestErrorMessageHandler != null)
+//                    takeOfferRequestErrorMessageHandler.handleErrorMessage(errorMessage);
+//            });
+//        } else {
+//            // TODO respond
+//            //(RequestDepositTxInputsMessage)message.
+//            //  messageService.sendEncryptedMessage(peerAddress,messageWithPubKey.getMessage().);
+//            log.debug("We received a take offer request but don't have that offer anymore.");
+//        }
+//    }
 
     private void initTrade(Trade trade, boolean useSavingsWallet, Coin fundsNeededForTrade) {
         trade.init(p2PService,
@@ -591,6 +601,8 @@ public class TradeManager implements PersistedDataHost {
                     isCurrencyForTakerFeeBtc,
                     tradePrice,
                     model.getPeerNodeAddress(),
+                    P2PService.getMyNodeAddress(),  // TODO (woodser): correct taker node address?
+                    model.getPeerNodeAddress(),
                     model.getSelectedArbitrator(),
                     model.getSelectedMediator(),
                     model.getSelectedRefundAgent(),
@@ -603,6 +615,8 @@ public class TradeManager implements PersistedDataHost {
                     takerFee,
                     isCurrencyForTakerFeeBtc,
                     tradePrice,
+                    model.getPeerNodeAddress(),
+                    P2PService.getMyNodeAddress(),
                     model.getPeerNodeAddress(),
                     model.getSelectedArbitrator(),
                     model.getSelectedMediator(),

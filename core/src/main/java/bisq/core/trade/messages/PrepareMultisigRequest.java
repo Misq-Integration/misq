@@ -52,11 +52,17 @@ public final class PrepareMultisigRequest extends TradeMessage implements Direct
     private final List<NodeAddress> acceptedArbitratorNodeAddresses;
     @Nullable
     private final NodeAddress arbitratorNodeAddress;
-
+    
     // added in v 0.6. can be null if we trade with an older peer
     @Nullable
     private final byte[] accountAgeWitnessSignatureOfOfferId;
     private final long currentDate;
+    
+    // added for XMR integration
+    @Nullable
+    private final NodeAddress takerNodeAddress;
+    @Nullable
+    private final NodeAddress makerNodeAddress;
 
     public PrepareMultisigRequest(String tradeId,
                                      NodeAddress senderNodeAddress,
@@ -75,7 +81,9 @@ public final class PrepareMultisigRequest extends TradeMessage implements Direct
                                      String uid,
                                      int messageVersion,
                                      @Nullable byte[] accountAgeWitnessSignatureOfOfferId,
-                                     long currentDate) {
+                                     long currentDate,
+                                     NodeAddress takerNodeAddress,
+                                     NodeAddress makerNodeAddress) {
         super(messageVersion, tradeId, uid);
         this.senderNodeAddress = senderNodeAddress;
         this.tradeAmount = tradeAmount;
@@ -92,6 +100,8 @@ public final class PrepareMultisigRequest extends TradeMessage implements Direct
         this.arbitratorNodeAddress = arbitratorNodeAddress;
         this.accountAgeWitnessSignatureOfOfferId = accountAgeWitnessSignatureOfOfferId;
         this.currentDate = currentDate;
+        this.takerNodeAddress = takerNodeAddress;
+        this.makerNodeAddress = makerNodeAddress;
     }
 
 
@@ -104,6 +114,8 @@ public final class PrepareMultisigRequest extends TradeMessage implements Direct
         protobuf.PrepareMultisigRequest.Builder builder = protobuf.PrepareMultisigRequest.newBuilder()
                 .setTradeId(tradeId)
                 .setSenderNodeAddress(senderNodeAddress.toProtoMessage())
+                .setTakerNodeAddress(takerNodeAddress.toProtoMessage())
+                .setMakerNodeAddress(makerNodeAddress.toProtoMessage())
                 .setTradeAmount(tradeAmount)
                 .setTradePrice(tradePrice)
                 .setTxFee(txFee)
@@ -147,7 +159,9 @@ public final class PrepareMultisigRequest extends TradeMessage implements Direct
                 proto.getUid(),
                 messageVersion,
                 ProtoUtil.byteArrayOrNullFromProto(proto.getAccountAgeWitnessSignatureOfOfferId()),
-                proto.getCurrentDate());
+                proto.getCurrentDate(),
+                NodeAddress.fromProto(proto.getTakerNodeAddress()),
+                NodeAddress.fromProto(proto.getMakerNodeAddress()));
     }
 
     @Override

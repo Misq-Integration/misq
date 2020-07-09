@@ -254,11 +254,6 @@ message InputsForDepositTxResponse {
 }
 
 message PrepareMultisigRequest {
-    enum Source {
-        TAKER = 0;
-        MAKER = 1;
-        ARBITRATOR = 2;
-    }
     string trade_id = 1;
     NodeAddress sender_node_address = 2;
     int64 trade_amount = 3;
@@ -276,6 +271,8 @@ message PrepareMultisigRequest {
     string uid = 15;
     bytes account_age_witness_signature_of_offer_id = 16;
     int64 current_date = 17;
+    NodeAddress taker_node_address = 18;
+    NodeAddress maker_node_address = 19;	// TODO (woodser): re-order?
 }
 
 message PrepareMultisigResponse {
@@ -1439,6 +1436,9 @@ message Trade {
     PubKeyRing refund_agent_pub_key_ring = 34;
     RefundResultState refund_result_state = 35;
     int64 last_refresh_request_date = 36;
+    
+    NodeAddress taker_node_address = 1000;	// TODO (woodser): re-order?
+    NodeAddress maker_node_address = 1001;
 }
 
 message BuyerAsMakerTrade {

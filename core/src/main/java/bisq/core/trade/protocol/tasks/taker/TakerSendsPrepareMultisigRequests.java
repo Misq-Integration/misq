@@ -87,6 +87,14 @@ public class TakerSendsPrepareMultisigRequests extends TradeTask {
             final PaymentAccountPayload paymentAccountPayload = checkNotNull(processModel.getPaymentAccountPayload(trade), "processModel.getPaymentAccountPayload(trade) must not be null");
             byte[] sig = Sig.sign(processModel.getKeyRing().getSignatureKeyPair().getPrivate(), offerId.getBytes(Charsets.UTF_8));
             
+            System.out.println("TAKER TRADE INFO");
+            System.out.println("Process model my node address: " + processModel.getMyNodeAddress());  // my node address
+            System.out.println("Trading peer node address: " + trade.getTradingPeerNodeAddress());  // maker
+            System.out.println("Maker node address: " + trade.getMakerNodeAddress()); // null
+            System.out.println("Taker node adddress: " + trade.getTakerNodeAddress());  // null
+            System.out.println("Mediator node address: " + trade.getMediatorNodeAddress()); // mediator
+            System.out.println("Arbitrator node address: " + trade.getArbitratorNodeAddress()); // null
+            
             // create message to request preparing multisig
             PrepareMultisigRequest message = new PrepareMultisigRequest(
                     offerId,
@@ -106,7 +114,9 @@ public class TakerSendsPrepareMultisigRequests extends TradeTask {
                     UUID.randomUUID().toString(),
                     Version.getP2PMessageVersion(),
                     sig,
-                    new Date().getTime());
+                    new Date().getTime(),
+                    trade.getTakerNodeAddress(),
+                    trade.getMakerNodeAddress());
             
             log.info("Send {} with offerId {} and uid {} to peer {}",
                     message.getClass().getSimpleName(), message.getTradeId(),

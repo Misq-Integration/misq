@@ -436,6 +436,8 @@ public abstract class Trade implements Tradable, Model {
                     Coin txFee,
                     Coin takerFee,
                     boolean isCurrencyForTakerFeeBtc,
+                    @Nullable NodeAddress takerNodeAddress,
+                    @Nullable NodeAddress makerNodeAddress,
                     @Nullable NodeAddress arbitratorNodeAddress,
                     @Nullable NodeAddress mediatorNodeAddress,
                     @Nullable NodeAddress refundAgentNodeAddress,
@@ -447,6 +449,8 @@ public abstract class Trade implements Tradable, Model {
         this.isCurrencyForTakerFeeBtc = isCurrencyForTakerFeeBtc;
         this.storage = storage;
         this.xmrWalletService = xmrWalletService;
+        this.takerNodeAddress = takerNodeAddress;
+        this.makerNodeAddress = makerNodeAddress;
         this.arbitratorNodeAddress = arbitratorNodeAddress;
         this.mediatorNodeAddress = mediatorNodeAddress;
         this.refundAgentNodeAddress = refundAgentNodeAddress;
@@ -469,6 +473,8 @@ public abstract class Trade implements Tradable, Model {
                     boolean isCurrencyForTakerFeeBtc,
                     long tradePrice,
                     NodeAddress tradingPeerNodeAddress,
+                    @Nullable NodeAddress takerNodeAddress,
+                    @Nullable NodeAddress makerNodeAddress,
                     @Nullable NodeAddress arbitratorNodeAddress,
                     @Nullable NodeAddress mediatorNodeAddress,
                     @Nullable NodeAddress refundAgentNodeAddress,
@@ -479,6 +485,8 @@ public abstract class Trade implements Tradable, Model {
                 txFee,
                 takerFee,
                 isCurrencyForTakerFeeBtc,
+                takerNodeAddress,
+                makerNodeAddress,
                 arbitratorNodeAddress,
                 mediatorNodeAddress,
                 refundAgentNodeAddress,
