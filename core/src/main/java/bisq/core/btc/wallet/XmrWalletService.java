@@ -25,6 +25,7 @@ import javafx.application.Platform;
 import lombok.Getter;
 import monero.wallet.MoneroWalletJni;
 import monero.wallet.model.MoneroAccount;
+import monero.wallet.model.MoneroOutputWallet;
 import monero.wallet.model.MoneroTransfer;
 import monero.wallet.model.MoneroTxConfig;
 import monero.wallet.model.MoneroTxQuery;
@@ -48,27 +49,32 @@ public class XmrWalletService {
 
     walletsSetup.addSetupCompletedHandler(() -> {
       wallet = walletsSetup.getXmrWallet();
-      wallet.addListener(new MoneroWalletListener() {
+      wallet.addListener(new MoneroWalletListener() { // TODO: notify
         @Override
         public void onSyncProgress(long height, long startHeight, long endHeight, double percentDone, String message) { }
 
         @Override
         public void onNewBlock(long height) { }
-        
+
         @Override
-        public void onBalancesChanged(BigInteger newBalance, BigInteger newUnlockedBalance) {
+        public void onOutputReceived(MoneroOutputWallet output) {
           Platform.runLater(new Runnable() {  // jni wallet runs on separate thread which cannot update fx
             @Override public void run() {
-              notifyBalanceListeners();
+              notifyBalanceListeners(output);
+            }
+          });
+        }
+
+        @Override
+        public void onOutputSpent(MoneroOutputWallet output) {
+          Platform.runLater(new Runnable() {
+            @Override public void run() {
+              notifyBalanceListeners(output);
             }
           });
         }
       });
     });
-  }
-  
-  public MoneroWalletJni getOrCreateMultisigWallet(String tradeId) {
-    throw new RuntimeException("getOrCreateMultisigWallet not yet implemented");
   }
   
   public XmrAddressEntry recoverAddressEntry(String offerId, String address, XmrAddressEntry.Context context) {
@@ -251,7 +257,7 @@ public class XmrWalletService {
     log.info("\n" + tracePrefix + ":\n" + tx.toString());
   }
   
-  private void notifyBalanceListeners() {
+  private void notifyBalanceListeners(MoneroOutputWallet output) {
     for (XmrBalanceListener balanceListener : balanceListeners) {
       Coin balance;
       if (balanceListener.getAccountIndex() != null && balanceListener.getAccountIndex() != 0) {
@@ -259,7 +265,7 @@ public class XmrWalletService {
       } else {
         balance = getAvailableConfirmedBalance();
       }
-      balanceListener.onBalanceChanged(BigInteger.valueOf(balance.value));
+      balanceListener.onBalanceChanged(BigInteger.valueOf(balance.value), output);
     }
   }
 }

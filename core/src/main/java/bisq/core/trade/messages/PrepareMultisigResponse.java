@@ -17,7 +17,6 @@
 
 package bisq.core.trade.messages;
 
-import bisq.common.crypto.PubKeyRing;
 import bisq.core.proto.CoreProtoResolver;
 import bisq.network.p2p.DirectMessage;
 import bisq.network.p2p.NodeAddress;
@@ -28,20 +27,17 @@ import lombok.Value;
 @Value
 public final class PrepareMultisigResponse extends TradeMessage implements DirectMessage {
     private final NodeAddress senderNodeAddress;
-    private final PubKeyRing pubKeyRing;
     private final String preparedMultisigHex;
     private final long currentDate;
 
     public PrepareMultisigResponse(String tradeId,
                                      NodeAddress senderNodeAddress,
-                                     PubKeyRing pubKeyRing,
                                      String preparedMultisigHex,
                                      String uid,
                                      int messageVersion,
                                      long currentDate) {
         super(messageVersion, tradeId, uid);
         this.senderNodeAddress = senderNodeAddress;
-        this.pubKeyRing = pubKeyRing;
         this.preparedMultisigHex = preparedMultisigHex;
         this.currentDate = currentDate;
     }
@@ -56,7 +52,6 @@ public final class PrepareMultisigResponse extends TradeMessage implements Direc
         protobuf.PrepareMultisigResponse.Builder builder = protobuf.PrepareMultisigResponse.newBuilder()
                 .setTradeId(tradeId)
                 .setSenderNodeAddress(senderNodeAddress.toProtoMessage())
-                .setPubKeyRing(pubKeyRing.toProtoMessage())
                 .setPreparedMultisigHex(preparedMultisigHex)
                 .setUid(uid);
 
@@ -70,7 +65,6 @@ public final class PrepareMultisigResponse extends TradeMessage implements Direc
                                                       int messageVersion) {
         return new PrepareMultisigResponse(proto.getTradeId(),
                 NodeAddress.fromProto(proto.getSenderNodeAddress()),
-                PubKeyRing.fromProto(proto.getPubKeyRing()),
                 proto.getPreparedMultisigHex(),
                 proto.getUid(),
                 messageVersion,
@@ -81,8 +75,7 @@ public final class PrepareMultisigResponse extends TradeMessage implements Direc
     public String toString() {
         return "PrepareMultisigResponse{" +
                 "\n     senderNodeAddress=" + senderNodeAddress +
-                ",\n     pubKeyRing=" + pubKeyRing +
-                ",\n     preparedMultisigHex='" + preparedMultisigHex + '\'' +
+                ",\n     takerPreparedMultisigHex='" + preparedMultisigHex + '\'' +
                 ",\n     currentDate=" + currentDate +
                 "\n} " + super.toString();
     }

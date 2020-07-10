@@ -42,7 +42,6 @@ import bisq.core.trade.messages.PrepareMultisigResponse;
 import bisq.core.trade.messages.TradeMessage;
 import bisq.core.trade.protocol.tasks.ApplyFilter;
 import bisq.core.trade.protocol.tasks.ProcessPeerPublishedDelayedPayoutTxMessage;
-import bisq.core.trade.protocol.tasks.ProcessPrepareMultisigResponse;
 import bisq.core.trade.protocol.tasks.mediation.BroadcastMediatedPayoutTx;
 import bisq.core.trade.protocol.tasks.mediation.FinalizeMediatedPayoutTx;
 import bisq.core.trade.protocol.tasks.mediation.ProcessMediatedPayoutSignatureMessage;
@@ -181,17 +180,7 @@ public abstract class TradeProtocol {
     ///////////////////////////////////////////////////////////////////////////////////////////
     
     protected void handle(PrepareMultisigResponse tradeMessage, NodeAddress sender) {
-      processModel.setTradeMessage(tradeMessage);
-      processModel.setTempTradingPeerNodeAddress(sender);
-      
-      TradeTaskRunner taskRunner = new TradeTaskRunner(trade,
-              () -> handleTaskRunnerSuccess(tradeMessage, "PrepareMultisigResponse"),
-              errorMessage -> handleTaskRunnerFault(tradeMessage, errorMessage));
-
-      taskRunner.addTasks(
-              ProcessPrepareMultisigResponse.class
-      );
-      taskRunner.run();
+      throw new RuntimeException("TradeProtocol.handle(preparedMultisigResponse) not yet implemented");
   }
     
     protected void handle(MediatedPayoutTxSignatureMessage tradeMessage, NodeAddress sender) {
@@ -255,8 +244,8 @@ public abstract class TradeProtocol {
         } else if (tradeMessage instanceof PeerPublishedDelayedPayoutTxMessage) {
             handle((PeerPublishedDelayedPayoutTxMessage) tradeMessage, sender);
         } else if (tradeMessage instanceof PrepareMultisigResponse) {
-            handle((PrepareMultisigResponse) tradeMessage, sender);
-        }
+          handle((PrepareMultisigResponse) tradeMessage, sender);
+      }
     }
 
 
@@ -372,18 +361,15 @@ public abstract class TradeProtocol {
         if (tradeMessage instanceof PrepareMultisigRequest) {
           nodeAddress = ((PrepareMultisigRequest) tradeMessage).getSenderNodeAddress();
           pubKeyRing = ((PrepareMultisigRequest) tradeMessage).getPubKeyRing();
-        } else if (tradeMessage instanceof PrepareMultisigResponse) {
-          nodeAddress = ((PrepareMultisigResponse) tradeMessage).getSenderNodeAddress();
-          pubKeyRing = ((PrepareMultisigResponse) tradeMessage).getPubKeyRing();
         } else {
-          throw new RuntimeException("Unknown message type to get pub key ring from: " + tradeMessage.getClass().getTypeName());
+          throw new RuntimeException("GET PUB KEY RING FROM MESSAGE TYPE " + tradeMessage.getClass().getTypeName());
         }
         
         // If there was an error during offer verification, the tradingPeerNodeAddress of the trade might not be set yet.
         // We can find the peer's node address in the processModel's tempTradingPeerNodeAddress in that case.
 //        final NodeAddress peersNodeAddress = trade.getTradingPeerNodeAddress() != null ? trade.getTradingPeerNodeAddress() : processModel.getTempTradingPeerNodeAddress();
-        log.info("Send AckMessage for {} to peer {}. tradeId={}, sourceUid={}",
-                ackMessage.getSourceMsgClassName(), nodeAddress, tradeId, sourceUid);
+        log.info("Send AckMessage for {} to peer {} with pub key ring {}. tradeId={}, sourceUid={}",
+                ackMessage.getSourceMsgClassName(), nodeAddress, pubKeyRing, tradeId, sourceUid);
         String finalSourceUid = sourceUid;
         processModel.getP2PService().sendEncryptedMailboxMessage(
                 nodeAddress,

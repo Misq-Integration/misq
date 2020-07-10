@@ -19,6 +19,8 @@ package bisq.core.btc.listeners;
 
 import java.math.BigInteger;
 
+import monero.wallet.model.MoneroOutputWallet;
+
 public class XmrBalanceListener {
     private Integer accountIndex;
 
@@ -33,6 +35,7 @@ public class XmrBalanceListener {
         return accountIndex;
     }
 
-    public void onBalanceChanged(BigInteger balance) {
+    @SuppressWarnings("UnusedParameters")
+    public void onBalanceChanged(BigInteger balance, MoneroOutputWallet output) {
     }
 }

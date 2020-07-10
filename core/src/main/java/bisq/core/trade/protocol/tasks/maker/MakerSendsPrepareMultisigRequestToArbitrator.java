@@ -64,6 +64,7 @@ public class MakerSendsPrepareMultisigRequestToArbitrator extends TradeTask {
             checkNotNull(prepareMultisigRequest);
             checkTradeId(processModel.getOfferId(), prepareMultisigRequest);
             System.out.println("GOT TAKER PREPARED MULTISIG HEX: " + prepareMultisigRequest.getPreparedMultisigHex());
+            // TODO: store taker prepared multisig hex
             
             // create wallet for multisig
             // TODO (woodser): manage in common util, set path, server

@@ -55,7 +55,7 @@ public class ArbitratorProcessesPrepareMultisigRequest extends TradeTask {
             
             // update to the latest peer address of our peer if the message is correct
             trade.setTradingPeerNodeAddress(processModel.getTempTradingPeerNodeAddress());
-            processModel.removeMailboxMessageAfterProcessing(trade);  // TODO (woodser): needed?
+            processModel.removeMailboxMessageAfterProcessing(trade);
             
             System.out.println("ARBITRATOR TRADE INFO");
             System.out.println("Trading peer node address: " + trade.getTradingPeerNodeAddress());
@@ -96,7 +96,6 @@ public class ArbitratorProcessesPrepareMultisigRequest extends TradeTask {
             PrepareMultisigResponse message = new PrepareMultisigResponse(
                     processModel.getOffer().getId(),
                     processModel.getMyNodeAddress(),
-                    processModel.getPubKeyRing(),
                     preparedHex,
                     UUID.randomUUID().toString(),
                     Version.getP2PMessageVersion(),
