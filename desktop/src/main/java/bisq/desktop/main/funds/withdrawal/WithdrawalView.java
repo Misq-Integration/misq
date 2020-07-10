@@ -243,7 +243,7 @@ public class WithdrawalView extends ActivatableView<VBox, Void> {
 
         balanceListener = new XmrBalanceListener() {
             @Override
-            public void onBalanceChanged(BigInteger balance, MoneroOutputWallet output) {
+            public void onBalanceChanged(BigInteger balance) {
                 updateList();
             }
         };

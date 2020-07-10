@@ -359,6 +359,7 @@ public abstract class Trade implements Tradable, Model {
     transient private Storage<? extends TradableList> storage;
     @Getter // to set in constructor so not final but set at init
     transient private BtcWalletService btcWalletService;
+    @Getter // to set in constructor so not final but set at init
     transient private XmrWalletService xmrWalletService;
 
     transient final private ObjectProperty<State> stateProperty = new SimpleObjectProperty<>(state);
@@ -437,7 +438,7 @@ public abstract class Trade implements Tradable, Model {
     @Getter
     @Setter
     private String arbitratorPreparedMultisigHex;
-
+    
     ///////////////////////////////////////////////////////////////////////////////////////////
     // Constructor, initialization
     ///////////////////////////////////////////////////////////////////////////////////////////

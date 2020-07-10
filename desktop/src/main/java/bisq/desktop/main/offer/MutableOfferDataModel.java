@@ -167,7 +167,7 @@ public abstract class MutableOfferDataModel extends OfferDataModel implements Bs
 
         xmrBalanceListener = new XmrBalanceListener(getAddressEntry().getAccountIndex()) {
             @Override
-            public void onBalanceChanged(BigInteger balance, MoneroOutputWallet output) {
+            public void onBalanceChanged(BigInteger balance) {
                 updateBalance();
             }
         };

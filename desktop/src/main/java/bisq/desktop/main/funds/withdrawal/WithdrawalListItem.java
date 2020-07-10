@@ -55,7 +55,7 @@ class WithdrawalListItem {
         balanceLabel = new AutoTooltipLabel();
         balanceListener = new XmrBalanceListener(addressEntry.getAccountIndex()) {
             @Override
-            public void onBalanceChanged(BigInteger balance, MoneroOutputWallet output) {
+            public void onBalanceChanged(BigInteger balance) {
                 updateBalance();
             }
         };
