@@ -278,9 +278,10 @@ message PrepareMultisigRequest {
 message PrepareMultisigResponse {
     string trade_id = 1;
     NodeAddress sender_node_address = 2;
-    string prepared_multisig_hex = 3;
-    string uid = 4;
-    int64 current_date = 5;
+    PubKeyRing pub_key_ring = 3;
+    string prepared_multisig_hex = 4;
+    string uid = 5;
+    int64 current_date = 6;
 }
 
 message DelayedPayoutTxSignatureRequest {
